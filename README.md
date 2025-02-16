@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/janduursma/zap-logger-wrapper)](https://goreportcard.com/report/github.com/janduursma/zap-logger-wrapper)
 [![semantic-release](https://img.shields.io/badge/semantic--release-ready-brightgreen)](https://github.com/go-semantic-release/go-semantic-release)
-[![codecov](https://codecov.io/github/janduursma/zap-logger-wrapper/graph/badge.svg?token=JJAWGLEN7Z)](https://codecov.io/github/janduursma/zap-logger-wrapper)
+[![codecov](https://codecov.io/gh/janduursma/zapnote-logger-go/graph/badge.svg?token=NA24AOA3EN)](https://codecov.io/gh/janduursma/zapnote-logger-go)
 
 This package provides a convenience wrapper around [Uber Zap](https://github.com/uber-go/zap) to streamline:
 
