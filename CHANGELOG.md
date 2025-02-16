@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+### [1.0.1](https://github.com/janduursma/zap-logger-wrapper/compare/v1.0.0...v1.0.1) (2025-02-16)
+
+
+### Bug Fixes
+
+* import path in logger_test.go ([a7c4d25](https://github.com/janduursma/zap-logger-wrapper/commit/a7c4d25bb977328f737bc87277da07ffde0e99ea))
+
 ## 1.0.0 (2025-02-16)
 
 
