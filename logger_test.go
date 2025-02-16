@@ -34,14 +34,14 @@ func (m *memorySink) Close() error {
 func TestLogger(t *testing.T) {
 	// Register a custom sink, so we can specify the output path.
 	sink := &memorySink{}
-	require.NoError(t, zap.RegisterSink("test", func(u *url.URL) (zap.Sink, error) {
+	require.NoError(t, zap.RegisterSink("test", func(_ *url.URL) (zap.Sink, error) {
 		// 'u' is the parsed URL for "test://whatever"
 		return sink, nil
 	}), "failed to register test sink")
 
 	// Create a logger via the public New(...) function,
 	// overriding the output path to use the in-memory sink.
-	traceFn := func(ctx context.Context) string { return "test-trace-id" }
+	traceFn := func(_ context.Context) string { return "test-trace-id" }
 	l, err := logger.New("test-service", traceFn, zap.DebugLevel, "test://whatever")
 	require.NoError(t, err, "failed to create logger")
 	require.NotNil(t, l, "logger should not be nil")
