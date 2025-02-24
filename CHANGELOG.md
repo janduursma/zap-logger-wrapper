@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+### [2.0.1](https://github.com/janduursma/zap-logger-wrapper/compare/v2.0.0...v2.0.1) (2025-02-24)
+
+
+### Bug Fixes
+
+* update comments ([72510be](https://github.com/janduursma/zap-logger-wrapper/commit/72510be58dce925eb5105ad7a438a2ba55005484))
+
 ## [2.0.0](https://github.com/janduursma/zap-logger-wrapper/compare/v1.0.1...v2.0.0) (2025-02-24)
 
 
