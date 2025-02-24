@@ -11,7 +11,7 @@ import (
 	"go.uber.org/zap"
 )
 
-// memorySink is a simple zapcore.WriteSyncer that stores logs in a string builder.
+// memorySink is a simple zap.WriteSyncer that stores logs in a string builder.
 type memorySink struct {
 	logs strings.Builder
 }
@@ -32,7 +32,7 @@ func (m *memorySink) Close() error {
 }
 
 func TestLogger(t *testing.T) {
-	// Register a custom sink, so we can specify the output path.
+	// Register a custom sink to specify the output path.
 	sink := &memorySink{}
 	require.NoError(t, zap.RegisterSink("test", func(_ *url.URL) (zap.Sink, error) {
 		// 'u' is the parsed URL for "test://whatever"
@@ -61,7 +61,6 @@ func TestLogger(t *testing.T) {
 	// Substring checks to confirm that the fields appear in the JSON.
 	logs := sink.logs.String()
 
-	// From config.InitialFields in logger.New(), we expect "service":"test-service"
 	require.Contains(t, logs, `"service":"test-service"`, "service field should be present")
 
 	// All logs should have a trace_id from traceFn
