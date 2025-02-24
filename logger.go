@@ -1,5 +1,13 @@
 // Package logger provides a wrapper around Uber's Zap logger
-// with automatic trace ID injection and structured logging.
+// It supports configuring options such as the log level, output paths, and a GetTraceIDFn
+// to automatically include trace IDs in log entries.
+//
+// By default, the logger is initialized with the following settings:
+//   - Log Level: Info
+//   - Output Paths: ["stdout"]
+//   - GetTraceIDFn: nil (i.e. no trace ID is automatically added)
+//
+// These defaults can be overridden using the provided functional options.
 package logger
 
 import (
@@ -14,43 +22,80 @@ type GetTraceIDFn func(ctx context.Context) string
 
 // Logger is the wrapper around zap.SugaredLogger.
 type Logger struct {
-	zapLogger  *zap.SugaredLogger
-	getTraceID GetTraceIDFn
+	zapLogger    *zap.SugaredLogger
+	getTraceIDFn GetTraceIDFn
+	level        zapcore.Level
+	outputPaths  []string
 }
 
-// New creates a new Logger wrapper. The arguments are:
-//   - zapLogger: the underlying zap.Logger
-//   - fn: a function that returns a trace ID from the given context
-func New(service string, fn GetTraceIDFn, level zapcore.Level, outputPaths ...string) (*Logger, error) {
-	config := zap.NewProductionConfig()
+// Option defines a functional option for configuring the Logger.
+type Option func(manager *Logger)
 
-	config.Level = zap.NewAtomicLevelAt(level)
+// WithTraceID allows a custom function to be set which automatically adds trace IDs to logs.
+func WithTraceID(getTraceIDFn GetTraceIDFn) Option {
+	return func(l *Logger) {
+		l.getTraceIDFn = getTraceIDFn
+	}
+}
+
+// WithLevel allows a custom minimum logging level to be set.
+func WithLevel(level zapcore.Level) Option {
+	return func(l *Logger) {
+		l.level = level
+	}
+}
+
+// WithOutputPaths allows a custom output path to be set.
+func WithOutputPaths(outputPaths []string) Option {
+	return func(l *Logger) {
+		l.outputPaths = outputPaths
+	}
+}
+
+// New creates a new Logger wrapper around zap.SugaredLogger.
+func New(service string, opts ...Option) (*Logger, error) {
+	defaultTraceIDFn := func(_ context.Context) string { return "" }
+	defaultLevel := zap.InfoLevel
+	defaultOutputPaths := []string{"stdout"}
+
+	l, err := zap.NewProduction()
+	if err != nil {
+		return nil, err
+	}
+
+	logger := &Logger{
+		zapLogger:    l.Sugar(),
+		getTraceIDFn: defaultTraceIDFn,
+		level:        defaultLevel,
+		outputPaths:  defaultOutputPaths,
+	}
+
+	for _, opt := range opts {
+		opt(logger)
+	}
+
+	config := zap.NewProductionConfig()
+	config.Level = zap.NewAtomicLevelAt(logger.level)
 	config.EncoderConfig.EncodeTime = zapcore.ISO8601TimeEncoder
 	config.DisableStacktrace = true
 	config.InitialFields = map[string]any{
 		"service": service,
 	}
+	config.OutputPaths = logger.outputPaths
 
-	config.OutputPaths = []string{"stdout"}
-	if outputPaths != nil {
-		config.OutputPaths = outputPaths
-	}
-
-	log, err := config.Build(zap.WithCaller(true))
+	l, err = config.Build(zap.WithCaller(true))
 	if err != nil {
 		return nil, err
 	}
+	logger.zapLogger = l.Sugar()
 
-	return &Logger{
-		zapLogger:  log.Sugar(),
-		getTraceID: fn,
-	}, nil
+	return logger, nil
 }
 
 // Info logs a message at InfoLevel, automatically including trace_id if available.
 func (l *Logger) Info(ctx context.Context, msg string, keyVals ...interface{}) {
-	if l.getTraceID != nil {
-		if traceID := l.getTraceID(ctx); traceID != "" {
+	if l.getTraceIDFn != nil {
+		if traceID := l.getTraceIDFn(ctx); traceID != "" {
 			// Append the trace_id as a key-value pair
 			keyVals = append(keyVals, "trace_id", traceID)
 		}
@@ -60,8 +105,8 @@ func (l *Logger) Info(ctx context.Context, msg string, keyVals ...interface{}) {
 
 // Error logs a message at ErrorLevel, automatically including trace_id if available.
 func (l *Logger) Error(ctx context.Context, msg string, keyVals ...interface{}) {
-	if l.getTraceID != nil {
-		if traceID := l.getTraceID(ctx); traceID != "" {
+	if l.getTraceIDFn != nil {
+		if traceID := l.getTraceIDFn(ctx); traceID != "" {
 			keyVals = append(keyVals, "trace_id", traceID)
 		}
 	}
@@ -70,8 +115,8 @@ func (l *Logger) Error(ctx context.Context, msg string, keyVals ...interface{}) 
 
 // Debug logs a message at DebugLevel, automatically including trace_id if available.
 func (l *Logger) Debug(ctx context.Context, msg string, keyVals ...interface{}) {
-	if l.getTraceID != nil {
-		if traceID := l.getTraceID(ctx); traceID != "" {
+	if l.getTraceIDFn != nil {
+		if traceID := l.getTraceIDFn(ctx); traceID != "" {
 			keyVals = append(keyVals, "trace_id", traceID)
 		}
 	}
@@ -84,8 +129,10 @@ func (l *Logger) With(keyVals ...interface{}) *Logger {
 	// zap.SugaredLogger has a With(...) method that returns a new SugaredLogger
 	newSugared := l.zapLogger.With(keyVals...)
 	return &Logger{
-		zapLogger:  newSugared,
-		getTraceID: l.getTraceID,
+		zapLogger:    newSugared,
+		getTraceIDFn: l.getTraceIDFn,
+		level:        l.level,
+		outputPaths:  l.outputPaths,
 	}
 }
 
