@@ -42,7 +42,7 @@ func TestLogger(t *testing.T) {
 	// Create a logger via the public New(...) function,
 	// overriding the output path to use the in-memory sink.
 	traceFn := func(_ context.Context) string { return "test-trace-id" }
-	l, err := logger.New("test-service", traceFn, zap.DebugLevel, "test://whatever")
+	l, err := logger.New("test-service", logger.WithTraceID(traceFn), logger.WithLevel(zap.DebugLevel), logger.WithOutputPaths([]string{"test://whatever"}))
 	require.NoError(t, err, "failed to create logger")
 	require.NotNil(t, l, "logger should not be nil")
 

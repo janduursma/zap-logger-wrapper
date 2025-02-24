@@ -3,7 +3,7 @@
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Go Report Card](https://goreportcard.com/badge/github.com/janduursma/zap-logger-wrapper)](https://goreportcard.com/report/github.com/janduursma/zap-logger-wrapper)
 [![semantic-release](https://img.shields.io/badge/semantic--release-ready-brightgreen)](https://github.com/go-semantic-release/go-semantic-release)
-[![codecov](https://codecov.io/gh/janduursma/zapnote-logger-go/graph/badge.svg?token=NA24AOA3EN)](https://codecov.io/gh/janduursma/zapnote-logger-go)
+[![codecov](https://codecov.io/gh/janduursma/zap-logger-wrapper/graph/badge.svg?token=NA24AOA3EN)](https://codecov.io/gh/janduursma/zap-logger-wrapper)
 
 This package provides a convenience wrapper around [Uber Zap](https://github.com/uber-go/zap) to streamline:
 
@@ -44,6 +44,21 @@ import logger "github.com/janduursma/zap-logger-wrapper"
 
 ---
 
+## Configuration
+
+This logger wrapper uses functional options to allow you to customize its behavior. By default, the logger is configured as follows:
+
+- **Log Level:** Info  
+  The default log level is set to `Info`. You can override this using the `WithLogLevel` option.
+
+- **Output Paths:** `["stdout"]`  
+  The default output path is set to standard output. Use `WithOutputPaths` to direct logs to a file or other destinations.
+
+- **GetTraceIDFn:** `nil`  
+  By default, no trace ID is automatically added to logs. If you want to include trace IDs (for example, when using distributed tracing), use `WithGetTraceIDFn` to supply a custom function that extracts the trace ID from your context.
+
+---
+
 ## Usage
 
 Below is a minimal usage example:
@@ -54,43 +69,37 @@ package main
 import (
    "context"
    "fmt"
-   "log"
-   
+   "os"
+
    logger "github.com/janduursma/zap-logger-wrapper"
    "go.uber.org/zap"
 )
 
 func main() {
-   // 1) Define a function that extracts trace IDs from a context.
+   ctx := context.Background()
+
+   // 1) Optionally define a function that extracts trace IDs from a context.
    traceFn := func(ctx context.Context) string {
-      // e.g., if stored under a custom key:
-      // if v, ok := ctx.Value("traceIDKey").(string); ok {
-      //     return v
-      // }
-      // return ""
       return "fake-trace-id" // simple placeholder
    }
 
-   // 2) Create a logger (by default logs go to stdout using JSON).
-   l, err := logger.New("myServiceName", traceFn, zap.InfoLevel)
+   // 2) Create a logger.
+   log, err := logger.New("myServiceName", logger.WithTraceID(traceFn))
    if err != nil {
-      log.Fatalf("failed to create logger: %v", err)
+      log.Error(ctx, "failed to create logger", "err", err)
+      os.Exit(1)
    }
 
-   ctx := context.Background()
-   // Optionally, store a real trace ID in context:
-   // ctx = context.WithValue(ctx, "traceIDKey", "abcd1234")
-
    // 3) Log some messages with key-value pairs.
-   l.Info(ctx, "Hello from logger", "key", "value")
-   l.Error(ctx, "An error occurred", "code", 500)
+   log.Info(ctx, "Hello from logger", "key", "value")
+   log.Error(ctx, "An error occurred", "code", 500)
 
    // 4) Optionally create a sub-logger with extra default fields.
-   subLogger := l.With("component", "signup")
+   subLogger := log.With("component", "signup")
    subLogger.Debug(ctx, "Debug details here", "anotherField", true)
 
    // 5) Flush logs before exiting
-   if err := l.Sync(); err != nil {
+   if err := log.Sync(); err != nil {
       fmt.Printf("failed to sync logs: %v\n", err)
    }
 }
