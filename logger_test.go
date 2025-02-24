@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	logger "github.com/janduursma/zap-logger-wrapper"
+	logger "github.com/janduursma/zap-logger-wrapper/v2"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap"
 )

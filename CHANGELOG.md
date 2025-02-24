@@ -2,6 +2,17 @@
 
 All notable changes to this project will be documented in this file.
 
+## [2.0.0](https://github.com/janduursma/zap-logger-wrapper/compare/v1.0.1...v2.0.0) (2025-02-24)
+
+
+### ⚠ BREAKING CHANGES
+
+* use functional options instead of parameters
+
+### Features
+
+* use functional options instead of parameters ([67fe372](https://github.com/janduursma/zap-logger-wrapper/commit/67fe372674a280509772857de3f9a62e78e009c8))
+
 ### [1.0.1](https://github.com/janduursma/zap-logger-wrapper/compare/v1.0.0...v1.0.1) (2025-02-16)
 
 

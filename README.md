@@ -33,13 +33,13 @@ This package provides a convenience wrapper around [Uber Zap](https://github.com
 ## Installation
 
 ```bash
-go get github.com/janduursma/zap-logger-wrapper
+go get github.com/janduursma/zap-logger-wrapper/v2
 ```
 
 Then import it:
 
 ```go
-import logger "github.com/janduursma/zap-logger-wrapper"
+import logger "github.com/janduursma/zap-logger-wrapper/v2"
 ```
 
 ---
@@ -71,7 +71,7 @@ import (
    "fmt"
    "os"
 
-   logger "github.com/janduursma/zap-logger-wrapper"
+   logger "github.com/janduursma/zap-logger-wrapper/v2"
    "go.uber.org/zap"
 )
 

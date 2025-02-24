@@ -1,4 +1,4 @@
-module github.com/janduursma/zap-logger-wrapper
+module github.com/janduursma/zap-logger-wrapper/v2
 
 go 1.24.0
 
